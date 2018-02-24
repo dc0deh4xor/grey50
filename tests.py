@@ -41,5 +41,14 @@ class TestDateParser(unittest.TestCase):
         })
 
 
+    def test_simple_exact_time(self):
+        self.assertEqual(parse_time("#Напомнить 9 октября  в 16:45 сделать что нибудь достойное"), {
+            "month": "октябрь",
+            "day": 9,
+            "hour": 16,
+            "minutes": 45
+        })
+
+
 if __name__ == "__main__":
     unittest.main()

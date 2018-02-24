@@ -1,5 +1,5 @@
 from pymystem3 import Mystem
-from json import dumps
+import arrow
 
 MONTH = [
     "январь",
@@ -35,6 +35,50 @@ UPCOMING_ADJS_SHORTS = [
     "пред",
 ]
 
+MONTH_MAP = {
+    "январь": 0,
+    "февраль": 1,
+
+    "март": 2,
+    "апрель": 3,
+    "май": 4,
+
+    "июнь": 5,
+    "июль": 6,
+    "август": 7,
+
+    "сентябрь": 8,
+    "октябрь": 9,
+    "ноябрь": 10,
+
+    "декабрь": 11,
+}
+
+WEEKDAYS_MAP = {
+    "понедельник": 0,
+    "вторник": 1,
+    "среда": 2,
+    "четверг": 3,
+    "пятница": 4,
+    "суббота": 5,
+    "воскресенье": 6,
+}
+
+UPCOMING_MAP = {
+    "след": 1,
+    "следующий": 1,
+    "пред": -1,
+    "предыдущий": -1,
+}
+
+DAY_MAP = {
+    "сегодня": 0,
+    "завтра": 1,
+    "послезавтра": 2,
+    "неделя": 7,
+    "месяц": 31,
+}
+
 TIME_SEPARATOR_CHARS = [' ', ':']
 
 DATE_KEY_WORDS = ["сегодня", "послезавтра", "завтра", "неделя", "месяц", WEEK_DAYS, MONTH]
@@ -64,6 +108,18 @@ def get_grammar(text_struct, index):
         if len(analysis) > 0 and 'gr' in analysis[0]:
             return analysis[0]['gr']
 
+    return None
+
+
+def get_date(input, text_struct, date_index):
+    prev = date_index - 1
+    while prev >= 0:
+        if len(input[prev]) > 0 and input[prev] != ' ':
+            try:
+                return int(input[prev])
+            except ValueError:
+                break
+        prev = prev - 1
     return None
 
 
@@ -127,6 +183,10 @@ def get_upcoming_addition(input, text_struct, date_index):
     return None
 
 
+def parse_place(sentence):
+    pass
+
+
 def parse_time(sentence):
     lInput = system.lemmatize(sentence)
     d = system.analyze(sentence)
@@ -135,21 +195,28 @@ def parse_time(sentence):
     time = get_time(lInput, d, date_index)
 
     time_obj = {}
+    date = arrow.utcnow()
 
     if time != None and len(time) > 0:
         time_obj["hour"] = time[0]
+        date = date.replace(hour=time[0])
         if len(time) > 1:
             time_obj["minutes"] = time[1]
-
-    if kWindex == 4:
-        time_obj["weekDay"] = value
-    elif kWindex == 5:
-        time_obj["month"] = value
-    else:
-        time_obj["upcoming"] = value
+            date = date.replace(minute=time[1])
 
     adj = get_upcoming_addition(lInput, d, date_index)
     if adj is not None:
         time_obj["adj"] = adj
 
-    return time_obj
+    if kWindex == 5:
+        time_obj["weekDay"] = value
+        date = date.shift(weekday=abs(WEEKDAYS_MAP[value] - date.weekday()))
+    elif kWindex == 6:
+        time_obj["month"] = value
+        time_obj["day"] = day = get_date(lInput, d, date_index)
+        date = date.replace(month=MONTH_MAP[value], day=day)
+    else:
+        time_obj["upcoming"] = value
+        date = date.shift(days=DAY_MAP[value])
+
+    return date.timestamp, time_obj

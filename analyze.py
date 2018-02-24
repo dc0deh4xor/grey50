@@ -15,11 +15,14 @@ def launch_parse():
     if len(data["message"]) > 255:
         title = data("message")[0:255]
 
+    timestamp,date_data = parse_time(data["message"])
+
     return dumps({
         "id": data["id"],
         "result": {
             "title": title,
-            "when": parse_time(data["message"]),
+            "when": timestamp,
+            "when_data": date_data,
             "place": None
         }
     })

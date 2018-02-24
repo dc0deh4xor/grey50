@@ -37,7 +37,7 @@ UPCOMING_ADJS_SHORTS = [
 
 TIME_SEPARATOR_CHARS = [' ', ':']
 
-DATE_KEY_WORDS = ["послезавтра", "завтра", "неделя", "месяц", WEEK_DAYS, MONTH]
+DATE_KEY_WORDS = ["сегодня", "послезавтра", "завтра", "неделя", "месяц", WEEK_DAYS, MONTH]
 
 system = Mystem()
 
@@ -81,7 +81,7 @@ def get_time(input, text_struct, date_index):
     while next < len(input):
         grammar = get_grammar(text_struct, next)
 
-        if grammar is not None and grammar[0:2] == "PR":
+        if grammar is not None and (grammar[0:2] == "PR" or input[next] == "в"):
             next = next + 1
             _time = []
             while next < len(input):
@@ -148,10 +148,8 @@ def parse_time(sentence):
     else:
         time_obj["upcoming"] = value
 
-    time_obj["adj"] = get_upcoming_addition(lInput, d, date_index)
+    adj = get_upcoming_addition(lInput, d, date_index)
+    if adj is not None:
+        time_obj["adj"] = adj
 
     return time_obj
-
-
-sentence = "на след, на пред, на Cледующей недели 9 января в 18:00, 9 мая"
-print("Found at: %s" % dumps(parse_time(sentence), indent=2, ensure_ascii=False))

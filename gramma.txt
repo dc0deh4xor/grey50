@@ -1,0 +1,10 @@
+<when(adj)?> <dateTxt[после?завтра]|[неделя]|[месяц]|set('неделя')|set('месяц')> <(pr)?> <time(number)>
+
+{
+    adj: string,
+    upcoming?: string,
+    month?: string,
+    weekDay?: string,
+    hour: number,
+    minutes: number
+}

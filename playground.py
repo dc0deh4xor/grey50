@@ -55,18 +55,23 @@ def find_key_date_noun(input):
 
 def get_upcoming_addition(input, text_struct, date_index):
     prev = date_index - 1
-    if prev >= 0 and prev < len(text_struct) \
-            and 'analysis' in text_struct[prev]:
+
+    while prev >= 0:
+        if not 'analysis' in text_struct[prev]:
+            prev = prev - 1
+        else:
+            break
+
+    if 0 <= prev < len(text_struct):
         analysis = text_struct[prev]['analysis']
         if len(analysis) > 0 and 'gr' in analysis[0]:
             origin_form_word = input[prev]
-            d = analysis[0]['gr'][0:2]
-            if analysis[0]['gr'].find('A') == 0:
+            gramma = analysis[0]['gr'][0:2]
+            if gramma == 'A,' or gramma == "A=":
                 return origin_form_word
             elif origin_form_word in UPCOMING_ADJS_SHORTS:
                 return origin_form_word
     return None
-
 
 system = Mystem()
 sentence = "на след, на пред, на Cледующей недели 9 января в 18:00, 9 мая"

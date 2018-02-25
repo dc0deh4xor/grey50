@@ -183,11 +183,42 @@ def get_upcoming_addition(input, text_struct, date_index):
     return None
 
 
-def parse_place(sentence):
-    pass
+def parse_place(input, text_struct):
+    def get_next(index):
+        while index >= 0:
+            if not 'analysis' in text_struct[index]:
+                index = index + 1
+            else:
+                break
+        return index
 
 
-def parse_time(sentence):
+    next = get_next(0)
+    place_preps = ["в", "на", "с"]
+
+    while next < len(input):
+        grammar = get_grammar(text_struct, next)
+
+        if grammar is not None and (grammar[0:2] == "PR" or input[next] in place_preps):
+            place = []
+            next = next + 1
+
+            if input[next] != " (":
+                continue
+
+            next = next + 1
+            while next < len(input) and input[next] != ") " and input[next] != ")\n":
+                place.append(text_struct[next]['text'])
+                next = next + 1
+
+            return ' '.join(place)
+        else:
+            next = get_next(next + 1)
+
+    return None
+
+
+def parse(sentence, test_mode=False):
     lInput = system.lemmatize(sentence)
     d = system.analyze(sentence)
 
@@ -219,4 +250,4 @@ def parse_time(sentence):
         time_obj["upcoming"] = value
         date = date.shift(days=DAY_MAP[value])
 
-    return date.timestamp, time_obj
+    return date.timestamp, time_obj, parse_place(lInput, d)
